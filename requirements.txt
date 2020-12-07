@@ -37,3 +37,5 @@ typing-extensions==3.7.4.3
 urllib3==1.26.2
 Werkzeug==1.0.1
 WTForms==2.3.3
+langdetect~=1.0.8
+textblob~=0.15.3

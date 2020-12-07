@@ -7,6 +7,7 @@ from virtualeyez import Reader
 import io
 from PIL import Image, ImageDraw
 import numpy as np
+from textblob import TextBlob
 
 
 def draw_boxes(image, bounds, color='red', width=2):
@@ -24,10 +25,25 @@ def index():
         var = form.image.data.stream.read()
         lat = form.latitude.data
         lon = form.longitude.data
+        lang = 'en'
+        if 12.41 <= float(lat) <= 19.07 and 77 <= float(lon) <= 84.40:
+            lang = 'te'
+        elif 8.5 <= float(lat) <= 13.35 and 76.15 <= float(lon) <= 80.20:
+            lang = 'ta'
+        elif 11.3 <= float(lat) <= 18.3 and 74 <= float(lon) <= 78.3:
+            lang = 'ka'
         image = Image.open(io.BytesIO(var))
         img = np.array(image)
         reader = Reader(['en', 'hi'])
         bounds = reader.readtext(img)
+        if lang != 'en':
+            reader1 = Reader([lang])
+            bounds1 = reader1.readtext(img)
+            for i in range(len(bounds)):
+                bounds[i] = list(bounds[i])
+                bounds[i][1] = (bounds1[i][1] + ' - ' + TextBlob(bounds1[i][1]).detect_language()
+                                if bounds[i][2] < bounds1[i][2]
+                                else bounds[i][1] + ' - ' + TextBlob(bounds[i][1]).detect_language())
         image_with_bounds = draw_boxes(image, bounds)
         buffered = io.BytesIO()
         image_with_bounds.save(buffered, format="png")
