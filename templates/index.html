@@ -2,13 +2,46 @@
 <html>
 <head>
     <title>Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="icon" href="/static/images/icon.png">
+    <style>
+        .preload{
+            background-size: contain;
+            {#width: 50%;#}
+            {#height: 70%;#}
+            z-index: -999;
+            opacity: 0.3;
+            position:absolute;
+            margin: 0;
+            justify-content: space-between;
+            left: 0;
+            {#background: transparent url("/static/images/icon.png") no-repeat fixed;#}
+        }
+        #logo{
+            background-image: url("/static/images/logo.png");
+            background-repeat: no-repeat;
+            width: 40vw;
+            height: 25vh;
+            min-height: 80px;
+            min-width: 150px;
+            background-position: center;
+            background-size: contain;
+        }
+    </style>
 </head>
 <body>
-<h2>File Upload & Image Preview</h2>
-<p class="lead">No Plugins <b>Just Javascript</b></p>
+<div class="preload d-lg-flex d-none w-100">
+    <img src="/static/images/icon.png">
+{#    <img src="/static/images/icon.png">#}
+    <img src="/static/images/icon.png">
+</div>
 
-<form id="file-upload-form" action="{{ url_for('index') }}" method="post" class="uploader"
+<div id="logo" class="mx-auto d-inline-block"></div>
+<br>
+<h2 class="mb-4 d-inline-block">Upload the image to be scanned</h2>
+<br>
+<form id="file-upload-form" action="{{ url_for('index') }}" method="post" class="uploader d-inline-block"
       enctype="multipart/form-data">
     <!--    <input id="file-upload" type="file" name="fileUpload" accept="image/*"/>-->
     {{ form.hidden_tag() }}
@@ -30,7 +63,7 @@
             </progress>
         </div>
     </label>
-    {{ form.submit(class='mt-3 btn btn-primary') }}
+    {{ form.submit(class='mt-3 btn btn-primary text-uppercase') }}
 </form>
 <script>
     function getLocation() {

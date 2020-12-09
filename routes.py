@@ -8,6 +8,7 @@ import io
 from PIL import Image, ImageDraw
 import numpy as np
 from textblob import TextBlob
+from translate import Translator
 
 
 def draw_boxes(image, bounds, color='red', width=2):
@@ -36,18 +37,44 @@ def index():
         img = np.array(image)
         reader = Reader(['en', 'hi'])
         bounds = reader.readtext(img)
+        temp = []
         if lang != 'en':
             reader1 = Reader([lang])
             bounds1 = reader1.readtext(img)
             for i in range(len(bounds)):
                 bounds[i] = list(bounds[i])
-                bounds[i][1] = (bounds1[i][1] + ' - ' + TextBlob(bounds1[i][1]).detect_language()
+                bounds[i][1] = (bounds1[i][1]
                                 if bounds[i][2] < bounds1[i][2]
-                                else bounds[i][1] + ' - ' + TextBlob(bounds[i][1]).detect_language())
+                                else bounds[i][1])
+                tem = False
+                for x in bounds[i][1]:
+                    if ord(x) > 255:
+                        tem = True
+                if tem:
+                    temp.append(TextBlob(bounds[i][1]).detect_language()) if len(bounds[i][1]) >= 3 else temp.append('')
+                else:
+                    temp.append('en')
         image_with_bounds = draw_boxes(image, bounds)
         buffered = io.BytesIO()
         image_with_bounds.save(buffered, format="png")
         b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        text = "\n".join([i[1] for i in bounds])
-        return render_template('result.html', image="data:image/png;base64," + b64, text=text, lat=lat, lon=lon)
+        text_trans = []
+        app.logger.info(bounds)
+        app.logger.info(temp)
+        for i in range(len(temp)):
+            if temp[i] in ['te', 'hi', 'ta', 'ka'] and bounds[i][2] > 0.001:
+                translator = Translator(from_lang=temp[i] + '-IN', to_lang='en')
+                translation = translator.translate(bounds[i][1])
+                text_trans.append(translation.upper())
+            else:
+                if bounds[i][2] > 0.001:
+                    text_trans.append(bounds[i][1])
+        text = "\n".join([i[1] if i[2] > 0.001 else '' for i in bounds])
+        text_trans = '\n'.join(text_trans)
+        return render_template('result.html', image="data:image/png;base64," + b64, text=text, text_trans=text_trans)
     return render_template('index.html', form=form)
+
+
+@app.route('/test')
+def test():
+    return render_template('result.html', text="hello  there", image='null')

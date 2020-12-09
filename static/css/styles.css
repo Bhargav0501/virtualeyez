@@ -20,7 +20,7 @@ h2 {
     font-family: "Roboto", sans-serif;
     font-size: 26px;
     line-height: 1;
-    color: #454cad;
+    color: #007bff;
     margin-bottom: 0;
 }
 
@@ -56,11 +56,11 @@ p {
 }
 
 .uploader label:hover {
-    border-color: #454cad;
+    border-color: #007bff;
 }
 
 .uploader label.hover {
-    border: 3px solid #454cad;
+    border: 3px solid #007bff;
     box-shadow: inset 0 0 0 6px #eee;
 }
 
@@ -144,13 +144,13 @@ p {
 }
 
 .uploader .progress[value]::-webkit-progress-value {
-    background: -webkit-gradient(linear, left top, right top, from(#393f90), color-stop(50%, #454cad));
-    background: linear-gradient(to right, #393f90 0%, #454cad 50%);
+    background: -webkit-gradient(linear, left top, right top, from(#393f90), color-stop(50%, #007bff));
+    background: linear-gradient(to right, #393f90 0%, #007bff 50%);
     border-radius: 4px;
 }
 
 .uploader .progress[value]::-moz-progress-bar {
-    background: linear-gradient(to right, #393f90 0%, #454cad 50%);
+    background: linear-gradient(to right, #393f90 0%, #007bff 50%);
     border-radius: 4px;
 }
 
@@ -182,7 +182,7 @@ p {
     -webkit-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
     box-sizing: border-box;
-    background: #454cad;
-    border-color: #454cad;
+    background: #007bff;
+    border-color: #007bff;
     cursor: pointer;
 }
