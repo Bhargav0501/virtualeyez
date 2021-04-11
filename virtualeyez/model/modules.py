@@ -83,10 +83,7 @@ class BidirectionalLSTM(nn.Module):
         self.linear = nn.Linear(hidden_size * 2, output_size)
 
     def forward(self, input):
-        """
-        input : visual feature [batch_size x T x input_size]
-        output : contextual feature [batch_size x T x output_size]
-        """
+
         self.rnn.flatten_parameters()
         recurrent, _ = self.rnn(input)  # batch_size x T x input_size -> batch_size x T x (2*hidden_size)
         output = self.linear(recurrent)  # batch_size x T x output_size
@@ -119,8 +116,6 @@ class VGG_FeatureExtractor(nn.Module):
 
 
 class ResNet_FeatureExtractor(nn.Module):
-    """ FeatureExtractor of FAN (http://openaccess.thecvf.com/content_ICCV_2017/papers
-    /Cheng_Focusing_Attention_Towards_ICCV_2017_paper.pdf) """
 
     def __init__(self, input_channel, output_channel=512):
         super(ResNet_FeatureExtractor, self).__init__()
@@ -144,7 +139,6 @@ class BasicBlock(nn.Module):
         self.stride = stride
 
     def _conv3x3(self, in_planes, out_planes, stride=1):
-        "3x3 convolution with padding"
         return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                          padding=1, bias=False)
 

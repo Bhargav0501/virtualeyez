@@ -2,23 +2,21 @@
 <html>
 <head>
     <title>Home</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="icon" href="/static/images/icon.png">
     <style>
-        .preload{
+        .preload {
             background-size: contain;
-            {#width: 50%;#}
-            {#height: 70%;#}
-            z-index: -999;
             opacity: 0.3;
-            position:absolute;
+            position: absolute;
             margin: 0;
             justify-content: space-between;
             left: 0;
-            {#background: transparent url("/static/images/icon.png") no-repeat fixed;#}
-        }
-        #logo{
+
+
+        #logo {
             background-image: url("/static/images/logo.png");
             background-repeat: no-repeat;
             width: 40vw;
@@ -33,10 +31,16 @@
 <body>
 <div class="preload d-lg-flex d-none w-100">
     <img src="/static/images/icon.png">
-{#    <img src="/static/images/icon.png">#}
+
     <img src="/static/images/icon.png">
 </div>
-
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-info col-12 text-center"> {{ message }} </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
 <div id="logo" class="mx-auto d-inline-block"></div>
 <br>
 <h2 class="mb-4 d-inline-block">Upload the image to be scanned</h2>
@@ -76,9 +80,11 @@
         let lat = document.querySelector('#latitude');
         lat.value = position.coords.latitude;
         let lon = document.querySelector('#longitude');
-        lon.value=position.coords.longitude;
+        lon.value = position.coords.longitude;
     }
+
     getLocation();
+
     function ekUpload() {
         function Init() {
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from .detection import get_detector, get_textbox
 from .recognition import get_recognizer, get_text
@@ -31,23 +30,6 @@ class Reader(object):
     def __init__(self, lang_list, gpu=False, model_storage_directory=None,
                  user_network_directory=None, recog_network='standard',
                  download_enabled=True, detector=True, recognizer=True):
-        """Create a Reader.
-
-        Parameters:
-            lang_list (list): Language codes (ISO 639) for languages to be recognized during analysis.
-
-            gpu (bool): Enable GPU support (default)
-
-            model_storage_directory (string): Path to directory for model data. If not specified,
-            models will be read from a directory as defined by the environment variable
-            EASYOCR_MODULE_PATH (preferred), MODULE_PATH (if defined), or ~/.EasyOCR/.
-
-            user_network_directory (string): Path to directory for custom network architecture.
-            If not specified, it is as defined by the environment variable
-            EASYOCR_MODULE_PATH (preferred), MODULE_PATH (if defined), or ~/.EasyOCR/.
-
-            download_enabled (bool): Enabled downloading of model data via HTTP (default).
-        """
         self.download_enabled = download_enabled
 
         self.model_storage_directory = MODULE_PATH + '/model'
@@ -72,26 +54,8 @@ class Reader(object):
         else:
             self.device = gpu
 
-        # check and download detection model
         corrupt_msg = 'MD5 hash mismatch, possible file corruption'
         detector_path = os.path.join(self.model_storage_directory, DETECTOR_FILENAME)
-        if os.path.isfile(detector_path) == False:
-            if not self.download_enabled:
-                raise FileNotFoundError("Missing %s and downloads disabled" % detector_path)
-            LOGGER.warning('Downloading detection model, please wait. '
-                           'This may take several minutes depending upon your network connection.')
-            download_and_unzip(model_url['detector'][0], DETECTOR_FILENAME, self.model_storage_directory)
-            assert calculate_md5(detector_path) == model_url['detector'][1], corrupt_msg
-            LOGGER.info('Download complete')
-        elif calculate_md5(detector_path) != model_url['detector'][1]:
-            if not self.download_enabled:
-                raise FileNotFoundError("MD5 mismatch for %s and downloads disabled" % detector_path)
-            LOGGER.warning(corrupt_msg)
-            os.remove(detector_path)
-            LOGGER.warning('Re-downloading the detection model, please wait. '
-                           'This may take several minutes depending upon your network connection.')
-            download_and_unzip(model_url['detector'][0], DETECTOR_FILENAME, self.model_storage_directory)
-            assert calculate_md5(detector_path) == model_url['detector'][1], corrupt_msg
 
         # recognition model
         separator_list = {}
@@ -112,66 +76,23 @@ class Reader(object):
                 raise ValueError(unknown_lang, 'is not supported')
 
             # choose recognition model
-            if 'th' in lang_list:
-                self.setModelLanguage('thai', lang_list, ['th', 'en'], '["th","en"]')
-            elif 'ch_tra' in lang_list:
-                self.setModelLanguage('chinese_tra', lang_list, ['ch_tra', 'en'], '["ch_tra","en"]')
-            elif 'ch_sim' in lang_list:
-                self.setModelLanguage('chinese_sim', lang_list, ['ch_sim', 'en'], '["ch_sim","en"]')
-            elif 'ja' in lang_list:
-                self.setModelLanguage('japanese', lang_list, ['ja', 'en'], '["ja","en"]')
-            elif 'ko' in lang_list:
-                self.setModelLanguage('korean', lang_list, ['ko', 'en'], '["ko","en"]')
-            elif 'ta' in lang_list:
+            if 'ta' in lang_list:
                 self.setModelLanguage('tamil', lang_list, ['ta', 'en'], '["ta","en"]')
             elif 'te' in lang_list:
                 self.setModelLanguage('telugu', lang_list, ['te', 'en'], '["te","en"]')
             elif 'kn' in lang_list:
                 self.setModelLanguage('kannada', lang_list, ['kn', 'en'], '["kn","en"]')
-            elif set(lang_list) & set(bengali_lang_list):
-                self.setModelLanguage('bengali', lang_list, bengali_lang_list + ['en'], '["bn","as","en"]')
-            elif set(lang_list) & set(arabic_lang_list):
-                self.setModelLanguage('arabic', lang_list, arabic_lang_list + ['en'], '["ar","fa","ur","ug","en"]')
             elif set(lang_list) & set(devanagari_lang_list):
                 self.setModelLanguage('devanagari', lang_list, devanagari_lang_list + ['en'], '["hi","mr","ne","en"]')
-            elif set(lang_list) & set(cyrillic_lang_list):
-                self.setModelLanguage('cyrillic', lang_list, cyrillic_lang_list + ['en'],
-                                      '["ru","rs_cyrillic","be","bg","uk","mn","en"]')
             else:
                 self.model_lang = 'latin'
 
             if self.model_lang == 'latin':
                 self.character = number + symbol + characters['all_char']
                 model_file = 'latin.pth'
-            elif self.model_lang == 'arabic':
-                self.character = number + symbol + characters['en_char'] + characters['ar_number'] + characters[
-                    'ar_symbol'] + characters['ar_char']
-                model_file = 'arabic.pth'
-            elif self.model_lang == 'cyrillic':
-                self.character = number + symbol + characters['en_char'] + characters['cyrillic_char']
-                model_file = 'cyrillic.pth'
             elif self.model_lang == 'devanagari':
                 self.character = number + symbol + characters['en_char'] + characters['devanagari_char']
                 model_file = 'devanagari.pth'
-            elif self.model_lang == 'bengali':
-                self.character = number + symbol + characters['en_char'] + characters['bn_char']
-                model_file = 'bengali.pth'
-            elif self.model_lang == 'chinese_tra':
-                ch_tra_char = self.getChar("ch_tra_char.txt")
-                self.character = number + symbol + characters['en_char'] + ch_tra_char
-                model_file = 'chinese.pth'
-            elif self.model_lang == 'chinese_sim':
-                ch_sim_char = self.getChar("ch_sim_char.txt")
-                self.character = number + symbol + characters['en_char'] + ch_sim_char
-                model_file = 'chinese_sim.pth'
-            elif self.model_lang == 'japanese':
-                ja_char = self.getChar("ja_char.txt")
-                self.character = number + symbol + characters['en_char'] + ja_char
-                model_file = 'japanese.pth'
-            elif self.model_lang == 'korean':
-                ko_char = self.getChar("ko_char.txt")
-                self.character = number + symbol + characters['en_char'] + ko_char
-                model_file = 'korean.pth'
             elif self.model_lang == 'tamil':
                 ta_char = self.getChar("ta_char.txt")
                 self.character = number + symbol + characters['en_char'] + ta_char
@@ -184,40 +105,11 @@ class Reader(object):
                 self.character = number + symbol + characters['en_char'] + characters['kn_char']
                 model_file = 'kannada.pth'
                 recog_network = 'lite'
-            elif self.model_lang == 'thai':
-                separator_list = {
-                    'th': ['\xa2', '\xa3'],
-                    'en': ['\xa4', '\xa5']
-                }
-                separator_char = []
-                for lang, sep in separator_list.items():
-                    separator_char += sep
-                self.character = ''.join(separator_char) + symbol + characters['en_char'] + characters['th_char'] + \
-                                 characters['th_number']
-                model_file = 'thai.pth'
             else:
                 LOGGER.error('invalid language')
 
             model_path = os.path.join(self.model_storage_directory, model_file)
-            # check recognition model file
-            if os.path.isfile(model_path) == False:
-                if not self.download_enabled:
-                    raise FileNotFoundError("Missing %s and downloads disabled" % model_path)
-                LOGGER.warning('Downloading recognition model, please wait. '
-                               'This may take several minutes depending upon your network connection.')
-                download_and_unzip(model_url[model_file][0], model_file, self.model_storage_directory)
-                assert calculate_md5(model_path) == model_url[model_file][1], corrupt_msg
-                LOGGER.info('Download complete.')
-            elif calculate_md5(model_path) != model_url[model_file][1]:
-                if not self.download_enabled:
-                    raise FileNotFoundError("MD5 mismatch for %s and downloads disabled" % model_path)
-                LOGGER.warning(corrupt_msg)
-                os.remove(model_path)
-                LOGGER.warning('Re-downloading the recognition model, please wait. '
-                               'This may take several minutes depending upon your network connection.')
-                download_and_unzip(model_url[model_file][0], model_file, self.model_storage_directory)
-                assert calculate_md5(model_path) == model_url[model_file][1], corrupt_msg
-                LOGGER.info('Download complete')
+
 
         self.lang_char = []
         for lang in lang_list:
@@ -315,18 +207,11 @@ class Reader(object):
         else:
             ignore_char = ''.join(set(self.character) - set(self.lang_char))
 
-        if self.model_lang in ['chinese_tra', 'chinese_sim', 'japanese', 'korean']: decoder = 'greedy'
         result = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list, \
                           ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths, \
                           workers, self.device)
 
-        if self.model_lang == 'arabic':
-            direction_mode = 'rtl'
-            result = [list(item) for item in result]
-            for item in result:
-                item[1] = get_display(item[1])
-        else:
-            direction_mode = 'ltr'
+        direction_mode = 'ltr'
 
         if paragraph:
             result = get_paragraph(result, mode=direction_mode)
@@ -344,10 +229,6 @@ class Reader(object):
                  canvas_size=2560, mag_ratio=1., \
                  slope_ths=0.1, ycenter_ths=0.5, height_ths=0.5, \
                  width_ths=0.5, add_margin=0.1):
-        '''
-        Parameters:
-        image: file path or numpy-array or a byte stream object
-        '''
         img, img_cv_grey = reformat_input(image)
 
         horizontal_list, free_list = self.detect(img, min_size, text_threshold, \

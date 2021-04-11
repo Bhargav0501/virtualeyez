@@ -26,6 +26,9 @@ def index():
         var = form.image.data.stream.read()
         lat = form.latitude.data
         lon = form.longitude.data
+        if lat == '' or lon == '':
+            flash('Enable location access')
+            return redirect('/')
         lang = 'en'
         if 12.41 <= float(lat) <= 19.07 and 77 <= float(lon) <= 84.40:
             lang = 'te'
@@ -62,14 +65,13 @@ def index():
         app.logger.info(bounds)
         app.logger.info(temp)
         for i in range(len(temp)):
-            if temp[i] in ['te', 'hi', 'ta', 'ka'] and bounds[i][2] > 0.001:
+            if temp[i] in ['te', 'hi', 'ta', 'ka']:
                 translator = Translator(from_lang=temp[i] + '-IN', to_lang='en')
                 translation = translator.translate(bounds[i][1])
                 text_trans.append(translation.upper())
             else:
-                if bounds[i][2] > 0.001:
-                    text_trans.append(bounds[i][1])
-        text = "\n".join([i[1] if i[2] > 0.001 else '' for i in bounds])
+                text_trans.append(bounds[i][1])
+        text = "\n".join([i[1] for i in bounds])
         text_trans = '\n'.join(text_trans)
         return render_template('result.html', image="data:image/png;base64," + b64, text=text, text_trans=text_trans)
     return render_template('index.html', form=form)
